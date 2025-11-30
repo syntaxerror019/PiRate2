@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PiRate v2.0</title>
+  <style>
+    :root{
+      --remote-w:320px;
+      --remote-h:400px;
+      --btn-size:58px;
+      --accent:#2b2b2b;
+      --accent2:#111;
+      --wood:#2f1f12;
+      --glass: rgba(255,255,255,0.06);
+    }
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Arial;background:linear-gradient(180deg,#111 0%, #1b2a3a 100%);display:flex;align-items:center;justify-content:center;color:#eee}
+    .scene{display:flex;gap:40px;align-items:flex-start}
+
+    /* Remote shell */
+    .remote{
+      width:var(--remote-w);
+      height:var(--remote-h);
+      background:linear-gradient(180deg,#1a1a1a 0%, #0f0f0f 100%);
+      border-radius:34px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.7), inset 0 2px 0 rgba(255,255,255,0.02);
+      padding:22px;
+      display:flex;flex-direction:column;align-items:center;gap:18px;
+      border:3px solid rgba(255,255,255,0.03);
+    }
+    .remote::before{content:'';width:70%;height:6px;background:linear-gradient(90deg,#333,#111);border-radius:6px;display:block;margin-top:6px}
+
+    .screen-frame{width:86%;height:155px;background:linear-gradient(180deg,#052 0%, #033 100%);border-radius:12px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;box-shadow:inset 0 10px 30px rgba(0,0,0,0.6)}
+    .screen-frame video{width:100%;height:100%;object-fit:cover}
+    .status{position:absolute;left:10px;top:8px;font-size:12px;opacity:0.95}
+
+    .controls{width:100%;display:flex;flex-direction:column;align-items:center;gap:12px}
+
+    .row{display:flex;gap:12px}
+    button.btn{
+      width:var(--btn-size);height:var(--btn-size);border-radius:12px;border:0;background:linear-gradient(180deg,#222,#0d0d0d);box-shadow:0 6px 14px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.02);color:#fff;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .08s ease, box-shadow .08s ease;
+      user-select:none;
+    }
+    button.btn:active{transform:translateY(2px) scale(.995)}
+    button.btn.small{width:44px;height:44px;border-radius:10px;font-size:14px}
+
+    /* big center transport row */
+    .transport{display:flex;gap:14px;align-items:center}
+    .play{width:78px;height:78px;border-radius:18px;background:linear-gradient(180deg,#0b7 0%, #045 100%);box-shadow:0 10px 24px rgba(4,150,120,0.18), inset 0 1px 0 rgba(255,255,255,0.06);font-size:22px}
+    .stop{background:linear-gradient(180deg,#b00 0%, #500 100%)}
+
+    .label{font-size:12px;opacity:.9}
+
+    /* CC toggle visual */
+    .cc-indicator{width:14px;height:10px;border-radius:2px;background:#4b4b4b;margin-left:8px;box-shadow:inset 0 -2px 4px rgba(0,0,0,0.6)}
+    .cc-indicator.on{background:#0f0}
+
+    /* bottom cluster */
+    .cluster{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:6px}
+
+    /* tiny helper */
+    .hint{font-size:12px;color:#9bb;opacity:.95}
+
+    /* make buttons accessible via focus */
+    button:focus{outline:3px solid rgba(51,153,255,0.18)}
+
+    /* realistic rubbery buttons area */
+    .pad{background:linear-gradient(180deg,#141414,#0b0b0b);padding:12px;border-radius:14px;width:92%;display:flex;flex-direction:column;align-items:center;gap:12px}
+
+    /* small panel showing cc text when on */
+    .cc-bubble{position:absolute;right:10px;bottom:10px;background:rgba(0,0,0,0.5);padding:6px 10px;border-radius:8px;font-size:12px;backdrop-filter: blur(4px)}
+
+    /* page side helpers (for desktop) */
+    .help-card{width:240px;padding:14px;border-radius:12px;background:linear-gradient(180deg,#0b2330,#061018);box-shadow:0 8px 24px rgba(0,0,0,0.6);font-size:13px}
+    .kbd{display:inline-block;padding:6px 8px;border-radius:6px;background:#0f1620;border:1px solid rgba(255,255,255,0.03);font-weight:600;margin-left:6px}
+
+    /* responsive */
+    @media (max-width:520px){
+      .scene{flex-direction:column}
+      .help-card{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <div class="scene">
+    <div class="remote" role="application" aria-label="Virtual TV remote">
+        <h1>TV Remote</h1>
+      <div class="pad">
+        <div class="controls">
+          <div class="row transport" style="justify-content:center;">
+            <button class="btn small" id="rw" title="Rewind (10s)">◀◀ RW</button>
+            <button class="btn play" id="play" title="Play / Pause">▶</button>
+            <button class="btn stop" id="stop" title="Stop">■</button>
+            <button class="btn small" id="ff" title="Fast-forward (10s)">▶▶ FF</button>
+          </div>
+
+          <div class="row" style="justify-content:center;align-items:center">
+            <button class="btn" id="ccOn" title="Enable Closed Captions">CC On</button>
+            <button class="btn" id="ccOff" title="Disable Closed Captions">CC Off</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="help-card" aria-hidden="false">
+      <h3 style="margin-top:0">Virtual TV Remote</h3>
+      <p class="hint">Control the TV remotely using the Web UI.</p>
+      <ul>
+        <li><strong>Play / Pause / Stop</strong> — central transport controls.</li>
+        <li><strong>⏪ / ⏩</strong> — jump 10 seconds backward/forward.</li>
+        <li><strong>CC On / CC Off</strong> — toggles subtitles.</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Tiny, self-contained remote logic
+    const vid = document.getElementById('vid');
+    const playBtn = document.getElementById('play');
+    const stopBtn = document.getElementById('stop');
+    const ffBtn = document.getElementById('ff');
+    const rwBtn = document.getElementById('rw');
+    const ccOn = document.getElementById('ccOn');
+    const ccOff = document.getElementById('ccOff');
+    const status = document.getElementById('status');
+    const ccBubble = document.getElementById('ccBubble');
+
+    playBtn.addEventListener('click', async ()=>{
+      send_cmd("plp");
+    });
+
+    stopBtn.addEventListener('click', ()=>{
+      send_cmd("stp");
+      setTimeout(()=> window.location.href = "/mydownloads", 1000);
+    });
+
+    ffBtn.addEventListener('click', ()=>{
+      send_cmd("ffw");
+    });
+
+    rwBtn.addEventListener('click', ()=>{
+      send_cmd("rrw");
+    });
+
+    ccOn.addEventListener('click', ()=>{
+      send_cmd("ccy");
+    });
+    ccOff.addEventListener('click', ()=>{
+      send_cmd("ccn");
+    });
+
+    async function send_cmd(cmd) {
+        await fetch(`/command/${cmd}`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+        });
+    }
+
+    // accessibility: let the remote be navigable by Tab and have aria-labels
+    document.querySelectorAll('button, input').forEach(el=>{
+      if(!el.getAttribute('aria-label')) el.setAttribute('aria-label', el.textContent.trim() || el.id);
+    });
+  </script>
+</body>
+</html>

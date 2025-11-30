@@ -1,0 +1,24 @@
+############### www.mileshilliard.com ###################
+#
+# User Configuration File.
+#
+# Adjust settings per your taste and preference!
+#
+# The default settings should work fine, 
+# so there is no immediate need to touch this.
+#
+#########################################################
+
+download_folder: /home/miles/Downloads/pirate-downloads
+create_folder: true
+
+# Network
+
+tbp_url: https://thepiratebay7.com/
+host: 0.0.0.0
+port: 3000
+
+# QBitTorrent
+
+qb_url: http://localhost:8080
+use_old_api: false # Leave off unless you have an old version of qBittorrent

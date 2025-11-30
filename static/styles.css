@@ -1,0 +1,15 @@
+html {
+    margin: 0;
+    padding: 0;
+    background-color: aliceblue;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+footer a:hover {
+  color: #0d6efd; /* Bootstrap primary color */
+}

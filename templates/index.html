@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+  <h3 class="mb-3">Torrent Search</h3>
+  <div class="input-group mb-3">
+    <input id="searchInput" type="text" class="form-control" placeholder="Search movies...">
+    <button class="btn btn-primary" onkeypress="searchTorrentKey()" onclick="searchTorrents()">Search</button>
+  </div>
+  <div id="results"></div>
+  
+{% endblock %}

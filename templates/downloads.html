@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h3 class="mb-3">Active Downloads</h3>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Status</th>
+        <th>Progress</th>
+        <th>Speed</th>
+        <th>ETA</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="downloads"></tbody>
+  </table>
+{% endblock %}
