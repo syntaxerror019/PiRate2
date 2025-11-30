@@ -3,7 +3,7 @@ Stream your favorite movies and TV shows at no price!
 
 **Disclaimer:** This software is simply a wrapper for The Pirate Bay (TPB) torrent sharing site and the QBittorrent API. Use at your own discretion, as pirating copyrighted material is ILLEGAL and put you in court and/ or under heavy fines! I am in no way responsible for your actions regarding the use of this software. You have been warned.
 
-A nice and tidily packaged "wrapper" for QBitorrent and 1337x. Find and watch any movie from the comfort of your couch, at no cost! 
+A nice and tidily packaged "wrapper" for QBitorrent and TPB Find and watch any movie from the comfort of your couch, at no cost! 
 
 *Side Note:*
 For all torrenting, a VPN is strongly recommended. I personally use [Proton VPN](https://protonvpn.com) as they have good support. 
