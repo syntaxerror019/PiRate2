@@ -1,12 +1,33 @@
 {% extends "base.html" %}
 
+{% block title %}PiRate — Search{% endblock %}
+
 {% block content %}
 
-  <h3 class="mb-3">Torrent Search</h3>
-  <div class="input-group mb-3">
-    <input id="searchInput" type="text" class="form-control" placeholder="Search movies...">
-    <button class="btn btn-primary" onkeypress="searchTorrentKey()" onclick="searchTorrents()">Search</button>
-  </div>
-  <div id="results"></div>
-  
+<div class="animate-in" style="margin-bottom:2.5rem;">
+    <p class="page-subtitle">// torrent engine</p>
+    <h1 class="page-title">Search</h1>
+</div>
+
+<div class="animate-in" style="animation-delay:0.08s;">
+    <div class="pirate-card" style="padding: 1.5rem 1.5rem 1.75rem;">
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+            <input
+                id="searchInput"
+                type="text"
+                class="form-control"
+                placeholder="Search for movies, shows, music…"
+                onkeypress="searchTorrentKey()"
+                style="flex:1; min-width:200px;"
+                autocomplete="off"
+            >
+            <button class="btn-pirate" onclick="searchTorrents()">
+                <i class="bi bi-search me-2"></i>Search
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="results" class="animate-in" style="margin-top: 1.5rem; animation-delay:0.18s;"></div>
+
 {% endblock %}

@@ -1,164 +1,448 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>PiRate v2.0</title>
+  <title>PiRate — TV Remote</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <style>
-    :root{
-      --remote-w:320px;
-      --remote-h:400px;
-      --btn-size:58px;
-      --accent:#2b2b2b;
-      --accent2:#111;
-      --wood:#2f1f12;
-      --glass: rgba(255,255,255,0.06);
+    :root {
+      --bg:       #060d14;
+      --surface:  #0b1624;
+      --surface2: #0f2033;
+      --border:   rgba(255,190,60,0.12);
+      --gold:     #f7b731;
+      --gold2:    #e8a820;
+      --teal:     #1fc9b8;
+      --text:     #cdd9e5;
+      --text-dim: #6d8499;
+      --font-display: 'Syne', sans-serif;
+      --font-mono:    'Space Mono', monospace;
+      --radius:   12px;
+      --btn-size: 62px;
     }
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Arial;background:linear-gradient(180deg,#111 0%, #1b2a3a 100%);display:flex;align-items:center;justify-content:center;color:#eee}
-    .scene{display:flex;gap:40px;align-items:flex-start}
 
-    /* Remote shell */
-    .remote{
-      width:var(--remote-w);
-      height:var(--remote-h);
-      background:linear-gradient(180deg,#1a1a1a 0%, #0f0f0f 100%);
-      border-radius:34px;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.7), inset 0 2px 0 rgba(255,255,255,0.02);
-      padding:22px;
-      display:flex;flex-direction:column;align-items:center;gap:18px;
-      border:3px solid rgba(255,255,255,0.03);
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      display: flex;
+      flex-direction: column;
     }
-    .remote::before{content:'';width:70%;height:6px;background:linear-gradient(90deg,#333,#111);border-radius:6px;display:block;margin-top:6px}
 
-    .screen-frame{width:86%;height:155px;background:linear-gradient(180deg,#052 0%, #033 100%);border-radius:12px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;box-shadow:inset 0 10px 30px rgba(0,0,0,0.6)}
-    .screen-frame video{width:100%;height:100%;object-fit:cover}
-    .status{position:absolute;left:10px;top:8px;font-size:12px;opacity:0.95}
-
-    .controls{width:100%;display:flex;flex-direction:column;align-items:center;gap:12px}
-
-    .row{display:flex;gap:12px}
-    button.btn{
-      width:var(--btn-size);height:var(--btn-size);border-radius:12px;border:0;background:linear-gradient(180deg,#222,#0d0d0d);box-shadow:0 6px 14px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.02);color:#fff;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .08s ease, box-shadow .08s ease;
-      user-select:none;
+    /* Noise grain */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.35;
     }
-    button.btn:active{transform:translateY(2px) scale(.995)}
-    button.btn.small{width:44px;height:44px;border-radius:10px;font-size:14px}
 
-    /* big center transport row */
-    .transport{display:flex;gap:14px;align-items:center}
-    .play{width:78px;height:78px;border-radius:18px;background:linear-gradient(180deg,#0b7 0%, #045 100%);box-shadow:0 10px 24px rgba(4,150,120,0.18), inset 0 1px 0 rgba(255,255,255,0.06);font-size:22px}
-    .stop{background:linear-gradient(180deg,#b00 0%, #500 100%)}
+    /* ── Nav ─────────────────────────────────── */
+    header {
+      background: rgba(10,20,35,0.98);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      min-height: 62px;
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(12px);
+    }
 
-    .label{font-size:12px;opacity:.9}
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: var(--gold);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
 
-    /* CC toggle visual */
-    .cc-indicator{width:14px;height:10px;border-radius:2px;background:#4b4b4b;margin-left:8px;box-shadow:inset 0 -2px 4px rgba(0,0,0,0.6)}
-    .cc-indicator.on{background:#0f0}
+    .brand::before { content: '⚡ '; }
 
-    /* bottom cluster */
-    .cluster{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:6px}
+    nav a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      transition: color 0.18s, background 0.18s;
+    }
 
-    /* tiny helper */
-    .hint{font-size:12px;color:#9bb;opacity:.95}
+    nav a:hover { color: var(--gold); background: rgba(247,183,49,0.08); }
 
-    /* make buttons accessible via focus */
-    button:focus{outline:3px solid rgba(51,153,255,0.18)}
+    /* ── Layout ──────────────────────────────── */
+    .page {
+      flex: 1;
+      position: relative; z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1.25rem 4rem;
+      gap: 2.5rem;
+    }
 
-    /* realistic rubbery buttons area */
-    .pad{background:linear-gradient(180deg,#141414,#0b0b0b);padding:12px;border-radius:14px;width:92%;display:flex;flex-direction:column;align-items:center;gap:12px}
+    .page-header {
+      text-align: center;
+    }
 
-    /* small panel showing cc text when on */
-    .cc-bubble{position:absolute;right:10px;bottom:10px;background:rgba(0,0,0,0.5);padding:6px 10px;border-radius:8px;font-size:12px;backdrop-filter: blur(4px)}
+    .page-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
 
-    /* page side helpers (for desktop) */
-    .help-card{width:240px;padding:14px;border-radius:12px;background:linear-gradient(180deg,#0b2330,#061018);box-shadow:0 8px 24px rgba(0,0,0,0.6);font-size:13px}
-    .kbd{display:inline-block;padding:6px 8px;border-radius:6px;background:#0f1620;border:1px solid rgba(255,255,255,0.03);font-weight:600;margin-left:6px}
+    .page-title {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(1.6rem, 5vw, 2.2rem);
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
 
-    /* responsive */
-    @media (max-width:520px){
-      .scene{flex-direction:column}
-      .help-card{width:100%}
+    /* ── Remote body ─────────────────────────── */
+    .remote-wrap {
+      display: flex;
+      gap: 2.5rem;
+      align-items: flex-start;
+      justify-content: center;
+      flex-wrap: wrap;
+      width: 100%;
+      max-width: 720px;
+    }
+
+    .remote {
+      width: 300px;
+      background: linear-gradient(175deg, #0f1e30 0%, #07111b 100%);
+      border: 1px solid var(--border);
+      border-radius: 32px;
+      padding: 1.75rem 1.5rem 2rem;
+      display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+      box-shadow:
+        0 24px 60px rgba(0,0,0,0.7),
+        0 2px 0 rgba(255,255,255,0.02) inset;
+      position: relative;
+    }
+
+    /* decorative top notch */
+    .remote::before {
+      content: '';
+      display: block;
+      width: 50px; height: 5px;
+      background: linear-gradient(90deg, rgba(247,183,49,0.4), rgba(31,201,184,0.3));
+      border-radius: 99px;
+      margin-bottom: 0.25rem;
+    }
+
+    /* ── Button groups ───────────────────────── */
+    .remote-section {
+      width: 100%;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 16px;
+      padding: 1.1rem 1rem;
+      display: flex; flex-direction: column; align-items: center; gap: 0.85rem;
+    }
+
+    .section-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      align-self: flex-start;
+    }
+
+    .btn-row {
+      display: flex; gap: 0.65rem; align-items: center; justify-content: center; width: 100%;
+    }
+
+    /* ── Buttons ─────────────────────────────── */
+    .rbtn {
+      width: var(--btn-size); height: var(--btn-size);
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.04);
+      background: linear-gradient(180deg, #1a2d42 0%, #0e1e2e 100%);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.02) inset;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+      cursor: pointer;
+      transition: transform 0.09s ease, box-shadow 0.09s ease, background 0.15s ease;
+      user-select: none;
+      outline: none;
+    }
+
+    .rbtn i { font-size: 1.25rem; line-height: 1; }
+
+    .rbtn:hover {
+      background: linear-gradient(180deg, #1e3650 0%, #11243a 100%);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    }
+
+    .rbtn:active {
+      transform: translateY(2px) scale(0.98);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+    }
+
+    /* Play button — primary accent */
+    .rbtn-play {
+      width: 74px; height: 74px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #19a88f 0%, #0d6b5c 100%);
+      border-color: rgba(31,201,184,0.2);
+      box-shadow: 0 10px 28px rgba(13,107,92,0.4), 0 1px 0 rgba(255,255,255,0.06) inset;
+      color: #fff;
+      font-size: 0.8rem;
+    }
+
+    .rbtn-play i { font-size: 1.5rem; }
+
+    .rbtn-play:hover {
+      background: linear-gradient(180deg, #1ebfa4 0%, #0e7968 100%);
+      box-shadow: 0 12px 32px rgba(13,107,92,0.5);
+    }
+
+    /* Stop button */
+    .rbtn-stop {
+      background: linear-gradient(180deg, #7b1d1d 0%, #4a0f0f 100%);
+      border-color: rgba(220,50,50,0.15);
+      box-shadow: 0 6px 16px rgba(80,10,10,0.55), 0 1px 0 rgba(255,255,255,0.02) inset;
+      color: #ffaaaa;
+    }
+
+    .rbtn-stop:hover {
+      background: linear-gradient(180deg, #8f2222 0%, #581212 100%);
+    }
+
+    /* CC buttons */
+    .rbtn-cc {
+      background: linear-gradient(180deg, #15253a 0%, #0c1a2a 100%);
+      color: var(--text-dim);
+      font-size: 0.7rem;
+    }
+
+    .rbtn-cc.active, .rbtn-cc:hover {
+      color: var(--gold);
+      border-color: rgba(247,183,49,0.2);
+    }
+
+    /* ── Help card ───────────────────────────── */
+    .help-card {
+      width: 280px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+
+    .help-card h3 {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.6rem;
+      letter-spacing: -0.01em;
+    }
+
+    .help-card p {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+
+    .help-list {
+      list-style: none; padding: 0;
+      display: flex; flex-direction: column; gap: 0.6rem;
+    }
+
+    .help-list li {
+      display: flex; align-items: flex-start; gap: 0.6rem;
+      font-size: 0.78rem; color: var(--text-dim); line-height: 1.5;
+    }
+
+    .help-list li::before {
+      content: '→';
+      color: var(--gold);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .help-list strong { color: var(--text); }
+
+    /* ── Footer ──────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1.1rem 1.5rem;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      position: relative; z-index: 1;
+    }
+
+    footer .foot-inner {
+      max-width: 960px; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;
+    }
+
+    footer a { color: var(--gold); text-decoration: none; }
+
+    /* ── Animate-in ──────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-up { animation: fadeUp 0.45s ease both; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+
+    /* ── Responsive ──────────────────────────── */
+    @media (max-width: 600px) {
+      .help-card { width: 100%; max-width: 300px; }
     }
   </style>
 </head>
 <body>
-  <div class="scene">
-    <div class="remote" role="application" aria-label="Virtual TV remote">
-        <h1>TV Remote</h1>
-      <div class="pad">
-        <div class="controls">
-          <div class="row transport" style="justify-content:center;">
-            <button class="btn small" id="rw" title="Rewind (10s)">◀◀ RW</button>
-            <button class="btn play" id="play" title="Play / Pause">▶</button>
-            <button class="btn stop" id="stop" title="Stop">■</button>
-            <button class="btn small" id="ff" title="Fast-forward (10s)">▶▶ FF</button>
-          </div>
 
-          <div class="row" style="justify-content:center;align-items:center">
-            <button class="btn" id="ccOn" title="Enable Closed Captions">CC On</button>
-            <button class="btn" id="ccOff" title="Disable Closed Captions">CC Off</button>
+  <header>
+    <a class="brand" href="/">PiRate</a>
+    <nav style="display:flex;gap:0.25rem;flex-wrap:wrap;">
+      <a href="/mydownloads"><i class="bi bi-arrow-down-circle"></i> Downloads</a>
+      <a href="/"><i class="bi bi-search"></i> Search</a>
+      <a href="/controller" style="color:var(--gold);"><i class="bi bi-display"></i> Remote</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <div class="page-header fade-up">
+      <p class="page-subtitle">// playback control</p>
+      <h1 class="page-title">TV Remote</h1>
+    </div>
+
+    <div class="remote-wrap">
+
+      <!-- Remote -->
+      <div class="remote fade-up delay-1" role="application" aria-label="Virtual TV remote">
+
+        <!-- Transport -->
+        <div class="remote-section">
+          <span class="section-label">Transport</span>
+          <div class="btn-row">
+            <button class="rbtn" id="rw" title="Rewind 10s" aria-label="Rewind">
+              <i class="bi bi-skip-backward-fill"></i>
+              <span>RW</span>
+            </button>
+
+            <button class="rbtn rbtn-play" id="play" title="Play / Pause" aria-label="Play / Pause">
+              <i class="bi bi-play-fill" id="play-icon"></i>
+            </button>
+
+            <button class="rbtn rbtn-stop" id="stop" title="Stop" aria-label="Stop">
+              <i class="bi bi-stop-fill"></i>
+              <span>STP</span>
+            </button>
+
+            <button class="rbtn" id="ff" title="Fast Forward 10s" aria-label="Fast Forward">
+              <i class="bi bi-skip-forward-fill"></i>
+              <span>FF</span>
+            </button>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div class="help-card" aria-hidden="false">
-      <h3 style="margin-top:0">Virtual TV Remote</h3>
-      <p class="hint">Control the TV remotely using the Web UI.</p>
-      <ul>
-        <li><strong>Play / Pause / Stop</strong> — central transport controls.</li>
-        <li><strong>⏪ / ⏩</strong> — jump 10 seconds backward/forward.</li>
-        <li><strong>CC On / CC Off</strong> — toggles subtitles.</li>
-      </ul>
+        <!-- Subtitles -->
+        <div class="remote-section">
+          <span class="section-label">Subtitles</span>
+          <div class="btn-row">
+            <button class="rbtn rbtn-cc" id="ccOn" title="Enable Subtitles" aria-label="CC On" style="width:auto;padding:0 1.2rem;gap:6px;">
+              <i class="bi bi-badge-cc-fill" style="font-size:1.1rem;"></i>
+              <span>CC ON</span>
+            </button>
+            <button class="rbtn rbtn-cc" id="ccOff" title="Disable Subtitles" aria-label="CC Off" style="width:auto;padding:0 1.2rem;gap:6px;">
+              <i class="bi bi-badge-cc" style="font-size:1.1rem;"></i>
+              <span>CC OFF</span>
+            </button>
+          </div>
+        </div>
+
+      </div><!-- /remote -->
+
+      <!-- Help card -->
+      <div class="help-card fade-up delay-2">
+        <h3>Virtual Remote</h3>
+        <p>Control your TV playback from any device on the network.</p>
+        <ul class="help-list">
+          <li><strong>Play / Pause</strong> — toggle playback</li>
+          <li><strong>Stop</strong> — halt &amp; return to downloads</li>
+          <li><strong>RW / FF</strong> — jump 10 seconds</li>
+          <li><strong>CC On / Off</strong> — toggle subtitles</li>
+        </ul>
+      </div>
+
+    </div><!-- /remote-wrap -->
+  </main>
+
+  <footer>
+    <div class="foot-inner">
+      <span>&copy; 2025 &mdash; <a href="https://www.mileshilliard.com">mileshilliard.com</a></span>
+      <a href="#" aria-label="GitHub"><i class="bi bi-github" style="font-size:1.1rem;"></i></a>
     </div>
-  </div>
+  </footer>
 
   <script>
-    // Tiny, self-contained remote logic
-    const vid = document.getElementById('vid');
-    const playBtn = document.getElementById('play');
-    const stopBtn = document.getElementById('stop');
-    const ffBtn = document.getElementById('ff');
-    const rwBtn = document.getElementById('rw');
-    const ccOn = document.getElementById('ccOn');
-    const ccOff = document.getElementById('ccOff');
-    const status = document.getElementById('status');
-    const ccBubble = document.getElementById('ccBubble');
+    const playBtn  = document.getElementById('play');
+    const stopBtn  = document.getElementById('stop');
+    const ffBtn    = document.getElementById('ff');
+    const rwBtn    = document.getElementById('rw');
+    const ccOnBtn  = document.getElementById('ccOn');
+    const ccOffBtn = document.getElementById('ccOff');
+    const playIcon = document.getElementById('play-icon');
+    let isPlaying = false;
 
-    playBtn.addEventListener('click', async ()=>{
-      send_cmd("plp");
+    playBtn.addEventListener('click', async () => {
+      isPlaying = !isPlaying;
+      playIcon.className = isPlaying ? 'bi bi-pause-fill' : 'bi bi-play-fill';
+      await send_cmd("plp");
     });
 
-    stopBtn.addEventListener('click', ()=>{
+    stopBtn.addEventListener('click', () => {
+      isPlaying = false;
+      playIcon.className = 'bi bi-play-fill';
       send_cmd("stp");
-      setTimeout(()=> window.location.href = "/mydownloads", 1000);
+      setTimeout(() => window.location.href = "/mydownloads", 1000);
     });
 
-    ffBtn.addEventListener('click', ()=>{
-      send_cmd("ffw");
-    });
-
-    rwBtn.addEventListener('click', ()=>{
-      send_cmd("rrw");
-    });
-
-    ccOn.addEventListener('click', ()=>{
-      send_cmd("ccy");
-    });
-    ccOff.addEventListener('click', ()=>{
-      send_cmd("ccn");
-    });
+    ffBtn.addEventListener('click',   () => send_cmd("ffw"));
+    rwBtn.addEventListener('click',   () => send_cmd("rrw"));
+    ccOnBtn.addEventListener('click', () => send_cmd("ccy"));
+    ccOffBtn.addEventListener('click',() => send_cmd("ccn"));
 
     async function send_cmd(cmd) {
+      try {
         await fetch(`/command/${cmd}`, {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
         });
+      } catch(e) {
+        console.error("Remote command failed:", e);
+      }
     }
 
-    // accessibility: let the remote be navigable by Tab and have aria-labels
-    document.querySelectorAll('button, input').forEach(el=>{
-      if(!el.getAttribute('aria-label')) el.setAttribute('aria-label', el.textContent.trim() || el.id);
+    // Accessibility
+    document.querySelectorAll('button').forEach(el => {
+      if (!el.getAttribute('aria-label'))
+        el.setAttribute('aria-label', el.textContent.trim() || el.id);
     });
   </script>
 </body>

@@ -1,18 +1,30 @@
 {% extends "base.html" %}
 
+{% block title %}PiRate — Downloads{% endblock %}
+
 {% block content %}
-  <h3 class="mb-3">Active Downloads</h3>
-  <table class="table table-bordered">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Status</th>
-        <th>Progress</th>
-        <th>Speed</th>
-        <th>ETA</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="downloads"></tbody>
-  </table>
+
+<div class="animate-in" style="margin-bottom:2.5rem;">
+    <p class="page-subtitle">// transfer queue</p>
+    <h1 class="page-title">Active Downloads</h1>
+</div>
+
+<div class="animate-in pirate-card" style="animation-delay:0.1s; overflow-x:auto;">
+    <table class="pirate-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th style="min-width:120px;">Progress</th>
+                <th>Speed</th>
+                <th>ETA</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="downloads">
+            <!-- rows injected by downloads.js -->
+        </tbody>
+    </table>
+</div>
+
 {% endblock %}

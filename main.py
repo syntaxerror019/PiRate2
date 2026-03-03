@@ -157,5 +157,5 @@ def setup():
 
 if __name__ == "__main__":
     setup()
-    subprocess.Popen(["python3", "overlay.py", f"http://{get_local_ip()}"])
+    #subprocess.Popen(["python3", "overlay.py", f"http://{get_local_ip()}"])
     app.run(debug=False, host=cf.get("host"), port=cf.get("port"))
